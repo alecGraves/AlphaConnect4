@@ -1,3 +1,8 @@
+'''
+Pure python implementation of a connect 4 terminal game object.
+Optimizations applied allow computation of one move in approx. 100us.
+Still kinda slow... see connect4tf.py for a (hopefully) faster implementation.
+'''
 import numpy as np
 
 class Connect4Board(object):
@@ -7,15 +12,19 @@ class Connect4Board(object):
         self.grid = np.zeros(board_shape, dtype=np.int8)
         self.height = np.zeros(board_shape[1], dtype=np.int8)
         self.player = 1
-    def move(self, slot):# Add a piece to the board
-        self.grid[self.height[slot], slot] = self.player
-        self.height[slot] += 1
-        # Update next player:
-        if self.player < 0:# == -1
-            self.player = 1
-        else:# self.player == 1
-            self.player = -1
-        return
+    def move(self, prob):# Add a piece to the board
+        prob = prob * np.less(self.height, 6)
+        if np.sum(prob) > 0:
+            slot = np.argmax(prob)
+            self.grid[self.height[slot], slot] = self.player
+            self.height[slot] += 1
+            # Update next player:
+            if self.player < 0:# == -1
+                self.player = 1
+            else:# self.player == 1
+                self.player = -1
+            return self.player
+        return 0
     def check(self):# Check if anyone has won
         checked = np.dot(self.grid.reshape(42,), self.wins)
         if np.sum(checked==4) > 0:
@@ -124,7 +133,7 @@ if __name__ == "__main__":
     import timeit
     print(timeit.timeit("board = Connect4Board(winVecs=winVecs)", setup="from __main__ import Connect4Board, winVecs", number=1000)/1000)
     print(timeit.timeit("board.move(1)", setup="from __main__ import board", number=5)/5)
-    print(timeit.timeit("board.check()", setup="from __main__ import board", number=100000)/100000)
+    print(timeit.timeit("board.check()", setup="from __main__ import board", number=10000)/10000)
 
     # x = board.grid.reshape((42,))
     # y = winFilters
