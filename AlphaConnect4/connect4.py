@@ -1,7 +1,9 @@
 import numpy as np
 
 class Connect4Board(object):
-    def __init__(self,  board_shape=(6, 7)):
+    def __init__(self, board_shape=(6, 7), winVecs=None):
+        if winVecs is not None:
+            self.wins=winVecs
         self.grid = np.zeros(board_shape, dtype=np.int8)
         self.height = np.zeros(board_shape[1], dtype=np.int8)
         self.player = 1
@@ -15,11 +17,12 @@ class Connect4Board(object):
             self.player = -1
         return
     def check(self):# Check if anyone has won
-        summ = 0
-        for i in wins:
-            summ = board.grid[i][0] + board.grid[i][1] + board.grid[i][2] + board.grid[i][3]
-            if summ == 4 or sum == -4:
-                return summ/4
+        checked = np.dot(self.grid.reshape(42,), self.wins)
+        if np.sum(checked==4) > 0:
+            return 1
+        if np.sum(checked == -4) > 0:
+            return -1
+        return 0
     def __str__(self):# String for print
         return str(self.grid[::-1])
 
@@ -37,7 +40,7 @@ class BoardExplorer(Connect4Board):
                 self.grid[j] = horiz
                 self.wins.append(self.grid)
                 # self.wins.append(np.where(self.grid > 0))
-                print(super().__str__())
+                # print(super().__str__())
                 super().__init__(self.grid.shape) #reset grid
         # print("winpatterns:", len(self.wins))
     def findVerticalWns(self):
@@ -49,7 +52,7 @@ class BoardExplorer(Connect4Board):
                 self.grid[:,j] = vert[:,0]
                 self.wins.append(self.grid)
                 # self.wins.append(np.where(self.grid > 0))
-                print(super().__str__())
+                # print(super().__str__())
                 super().__init__(self.grid.shape) #reset grid
         # print("winpatterns:", len(self.wins))
     def findDiagWins(self):
@@ -74,39 +77,61 @@ class BoardExplorer(Connect4Board):
                     self.grid[winIdx] = 1# winning diag = to 1
                     self.wins.append(self.grid)
                     # self.wins.append(np.where(self.grid > 0))#save points
-                    print(super().__str__())
+                    # print(super().__str__())
                     self.grid = np.flip(self.grid, axis=0)# flip vertically
                     self.wins.append(self.grid)
                     # self.wins.append(np.where(self.grid > 0))#save points
-                    print(super().__str__())
+                    # print(super().__str__())
                     self.grid = np.flip(self.grid, axis=1)# flip horizontally
                     self.wins.append(self.grid)
                     # self.wins.append(np.where(self.grid > 0))#save points
-                    print(super().__str__())
+                    # print(super().__str__())
                     self.grid = np.flip(self.grid, axis=0)# flip vertically
                     self.wins.append(self.grid)
                     # self.wins.append(np.where(self.grid > 0))#save points
-                    print(super().__str__())
+                    # print(super().__str__())
                     super().__init__(self.grid.shape)# reset grid
         print("winpatterns:", len(self.wins))
     def getWinPatterns(self):
+        self.wins = []
         self.findHorizWins()
         self.findVerticalWns()
         self.findDiagWins()
-        return self.wins
+        filters = np.swapaxes(np.array(self.wins, dtype=np.int8).T, 0, 1) #(6x7x69)
+        return filters.reshape(42, 69) # single vector for comparison
 
 if __name__ == "__main__":
-    board = Connect4Board()
-    board.move(1)
-    board.move(1)
-    print(board)
-
     explore = BoardExplorer()
-    explore.findHorizWins()
-    explore.findVerticalWns()
-    explore.findDiagWins()
-    winFilters = explore.getWinPatterns()
-    print(wins[0][1])
+    # explore.findHorizWins()
+    # explore.findVerticalWns()
+    # explore.findDiagWins()
+    winVecs = explore.getWinPatterns()
+
+    board = Connect4Board(winVecs=winVecs)
+    for i in range(4):
+        board.move(i+1)
+        board.move(i)
+    print(board)
+    print(board.check())
+
+    import timeit
+    print(timeit.timeit("board.check()", setup="from __main__ import board", number=1000)/1000)
+    # x = board.grid.reshape((42,))
+    # y = winFilters
+    # print(np.dot(x, y))
+    # exit()
+
+
+    # print(winFilters)
+    # print(winFilters.shape)
+    # x = np.matmul(board.grid, winFilters)
+    # print(x[:,:,:])
+    # x = np.sum(x, axis=0)
+    # x = np.sum(x, axis=0)
+    # # print(winFilters[:,:,np.where(x == 16)[0][0]])
+    # print(x.shape)
+    # print(x)
+    # exit()
 
     # print("wins = [")
     # for i in wins:
@@ -116,13 +141,12 @@ if __name__ == "__main__":
     # exit()
 
 
-
-    import timeit
-    x = np.ndarray((6, 7), dtype=np.int8)
-    y = np.ndarray((6, 7, 69), dtype=np.int8)
-    print(timeit.timeit("np.sum(np.dot(x, y))", setup="from __main__ import x, y, np", number=10000)/10000)
-    print(timeit.timeit("np.sum(np.array([board.grid[i] for i in wins]), axis=1)", setup="from __main__ import board, wins, np", number=1000)/1000)
-    print(timeit.timeit("board.check()", setup="from __main__ import board", number=1000)/1000)
+    # import timeit
+    # x = np.ndarray((6, 7), dtype=np.int8)
+    # y = np.ndarray((6, 7, 69), dtype=np.int8)
+    # print(timeit.timeit("np.sum(np.dot(x, y))", setup="from __main__ import x, y, np", number=10000)/10000)
+    # print(timeit.timeit("np.sum(np.dot(board, winFilters))", setup="from __main__ import board, winFilters, np", number=1000)/1000)
+    # print(timeit.timeit("board.check()", setup="from __main__ import board", number=1000)/1000)
 
 
     # print(timeit.timeit("board = Connect4Board()", setup="from __main__ import Connect4Board", number=1000)/1000)
