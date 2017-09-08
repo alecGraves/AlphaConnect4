@@ -108,13 +108,22 @@ if __name__ == "__main__":
     winVecs = explore.getWinPatterns()
 
     board = Connect4Board(winVecs=winVecs)
-    for i in range(4):
+    for i in range(5):
+        board.move(i+1)
+        board.move(i)
+        board.move(i+1)
+        board.move(i)
         board.move(i+1)
         board.move(i)
     print(board)
     print(board.check())
 
+    winVecs1 = explore.getWinPatterns()
+
+    board = Connect4Board(winVecs=winVecs1)
     import timeit
+    print(timeit.timeit("board = Connect4Board(winVecs=winVecs)", setup="from __main__ import Connect4Board, winVecs", number=1000)/1000)
+    print(timeit.timeit("board.move(1)", setup="from __main__ import board", number=5)/5)
     print(timeit.timeit("board.check()", setup="from __main__ import board", number=1000)/1000)
     # x = board.grid.reshape((42,))
     # y = winFilters
