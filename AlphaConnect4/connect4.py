@@ -1,6 +1,6 @@
 '''
 Pure python implementation of a connect 4 terminal game object.
-Optimizations applied allow computation of one move in approx. 100us.
+Optimizations applied allow computation of one move and one check in approx. 100us.
 Still kinda slow... see connect4tf.py for a (hopefully) faster implementation.
 '''
 import numpy as np
