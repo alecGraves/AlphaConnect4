@@ -1,7 +1,7 @@
 '''
 Pure python implementation of a connect 4 terminal game object.
 Optimizations applied allow computation of one move and one check in approx. 100us.
-Still kinda slow... see connect4tf.py for a (hopefully) faster implementation.
+---Still kinda slow... see connect4tf.py for a (hopefully) faster implementation.---nvm, this is all i got
 '''
 import numpy as np
 
@@ -18,20 +18,20 @@ class Connect4Board(object):
             slot = np.argmax(prob)
             self.grid[self.height[slot], slot] = self.player
             self.height[slot] += 1
-            # Update next player:
-            if self.player < 0:# == -1
+            #self.player *= -1# this is a bit slower than if statements...
+            if self.player < 0:# swap players
                 self.player = 1
-            else:# self.player == 1
+            else:
                 self.player = -1
-            return self.player
-        return 0
+            return None# No tie
+        return 0# Game is a tie
     def check(self):# Check if anyone has won
         checked = np.dot(self.grid.reshape(42,), self.wins)
-        if np.sum(checked==4) > 0:
+        if np.sum(checked==4):
             return 1
-        if np.sum(checked == -4) > 0:
+        if np.sum(checked==-4):
             return -1
-        return 0
+        return None# No winner
     def __str__(self):# String for print
         return str(self.grid[::-1])
 
@@ -132,7 +132,7 @@ if __name__ == "__main__":
     board = Connect4Board(winVecs=winVecs1)
     import timeit
     print(timeit.timeit("board = Connect4Board(winVecs=winVecs)", setup="from __main__ import Connect4Board, winVecs", number=1000)/1000)
-    print(timeit.timeit("board.move(1)", setup="from __main__ import board", number=5)/5)
+    print(timeit.timeit("board.move(1);board = Connect4Board(winVecs=winVecs)", setup="from __main__ import board, Connect4Board, winVecs", number=10000)/10000)
     print(timeit.timeit("board.check()", setup="from __main__ import board", number=10000)/10000)
 
     # x = board.grid.reshape((42,))

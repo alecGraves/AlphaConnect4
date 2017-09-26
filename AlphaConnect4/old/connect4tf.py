@@ -1,5 +1,7 @@
 '''
 tensorflow implementation of connect4 board object
+This was abandoned in favor of just using the python version that works fine.
+Perhaps in the future I may try to complete this.
 '''
 import tensorflow as tf
 import numpy as np
