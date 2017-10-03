@@ -27,9 +27,9 @@ class Connect4Board(object):
         return 0# Game is a tie
     def check(self):# Check if anyone has won
         checked = np.dot(self.grid.reshape(42,), self.wins)
-        if np.sum(checked==4):
+        if np.sum(checked > 3):
             return 1
-        if np.sum(checked==-4):
+        if np.sum(checked < -3):
             return -1
         return None# No winner
     def __str__(self):# String for print
